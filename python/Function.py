@@ -28,6 +28,9 @@ def read_COM(port):
     return data
 
 
+def write_COM(port):
+    port.write(bytes(x, 'utf-8'))
+
 def chose_COMPORT():
     while(True):
         ports = serial.tools.list_ports.comports()
