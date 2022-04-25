@@ -16,9 +16,9 @@ from sympy.solvers import solve
 s,z=symbols("s,z")
 init_printing()
 
-def c2d(expr,T):
+def c2d(expr,Tc):
     new=cancel(expr)
-    new=new.subs(s,2/T*(z-1)/(z+1))
+    new=new.subs(s,2/Tc*(z-1)/(z+1))
     new=simp_expr(new)
     return new
 
@@ -140,6 +140,11 @@ def step(sys,Tc,T=-1):
     plot_data(time,U[len(coeff_u)-2:])
     return Y,U,time
 
+
+def feedback(L,H):
+    sys=L/(1+L*H)
+    sys=cancel(sys)
+    return sys
 
 def sys_out(coeff_u,coeff_y,U,Y):
     y=0.0
