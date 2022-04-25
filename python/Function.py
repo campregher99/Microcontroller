@@ -111,18 +111,34 @@ def zpk_data(expr,var):
         K=num.subs(z,1)/den.subs(z,1)
     return zeros,poles,K
 
-def step(sys,T,Tc):
-    time=np.linspace(0,T,T/Tc).tolist()
+def step(sys,Tc,T=-1):
     coeff_u,coeff_y=coeff4micro(sys)
+    k=zpk_data(sys,z)
     U=np.zeros(len(coeff_u)-1).tolist()
     Y=np.zeros(len(coeff_y)).tolist()
-    for t in time:
-        U.append(1)
-        Y.append(sys_out(coeff_u,coeff_y,U,Y))
+    if(T==-1):
+        time=[0]
+        i=0
+        while True:
+            time.append(time[-1]+Tc)
+            U.append(1)
+            Y.append(sys_out(coeff_u,coeff_y,U,Y))
+            if(Y[-1]<1.01*k[2] and Y[-1]>0.99*k[2]):
+                i=i+1
+            else:
+                i=0
+            if(i==100):
+                break
+        time.pop()
+    else:
+        time=np.linspace(0,T,T/Tc).tolist()
+        for t in time:
+            U.append(1)
+            Y.append(sys_out(coeff_u,coeff_y,U,Y))
     plot_data(time,Y[len(coeff_y):])
     time.insert(0,-Tc)
     plot_data(time,U[len(coeff_u)-2:])
-    return Y,U
+    return Y,U,time
 
 
 def sys_out(coeff_u,coeff_y,U,Y):

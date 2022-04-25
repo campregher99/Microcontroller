@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 from __future__ import division
-import prova_sympy_simplify as fn
 from sympy.solvers import solve
 from sympy import *
 import Function as fn
@@ -26,4 +25,4 @@ zd=cancel(zd/div)
 pprint(zn/zd)
 print("Z P K:\t"+str(fn.zpk_data(zexpr,z)))
 coeff_u,coeff_y=fn.coeff4micro(zexpr)
-fn.step(zexpr,5,0.001)
+fn.step(zexpr,0.001)
