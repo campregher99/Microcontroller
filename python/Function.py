@@ -112,25 +112,25 @@ def zpk_data(expr,var):
     return zeros,poles,K
 
 def step(sys,T,Tc):
-    time=np.linspace(0,T,T/Tc)
+    time=np.linspace(0,T,T/Tc).tolist()
     coeff_u,coeff_y=coeff4micro(sys)
-    print(coeff_u,coeff_y)
-    U=np.zeros(len(coeff_u)-1)
-    Y=np.zeros(len(coeff_y))
+    U=np.zeros(len(coeff_u)-1).tolist()
+    Y=np.zeros(len(coeff_y)).tolist()
     for t in time:
-        U=np.append(U,1)
-        Y=np.append(Y,sys_out(coeff_u,coeff_y,U,Y))
+        U.append(1)
+        Y.append(sys_out(coeff_u,coeff_y,U,Y))
     plot_data(time,Y[len(coeff_y):])
-    plot_data(time,U[len(coeff_u)-1:])
+    time.insert(0,-Tc)
+    plot_data(time,U[len(coeff_u)-2:])
     return Y,U
 
 
 def sys_out(coeff_u,coeff_y,U,Y):
     y=0.0
     for i in range(len(coeff_u)):
-        y=y+U[i-len(coeff_u)]*coeff_u[i]
+        y=y+U[-i-1]*coeff_u[i]
     for i in range(len(coeff_y)):
-        y=y+Y[i-len(coeff_y)]*coeff_y[i]
+        y=y+Y[-i-1]*coeff_y[i]
     return y
 
 
@@ -187,7 +187,7 @@ def open_data_user():
 
 def plot_data(data_x,data_y,label_x="x",label_y="y",fig=1):
     plt.figure(fig)
-    plt.scatter(data_x, data_y)
+    plt.plot(data_x, data_y)
     plt.xlabel(label_x)
     plt.ylabel(label_y)
     plt.show()
