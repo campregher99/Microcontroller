@@ -12,9 +12,35 @@ from datetime import datetime
 import numpy as np
 from sympy import *
 from sympy.solvers import solve
+import serial.tools.list_ports
+import serial
+
 
 s,z=symbols("s,z")
 init_printing()
+
+
+def read_COM(port):
+    while(True):
+        data = port.readline()
+        if(data):
+            break
+    return data
+
+
+def chose_COMPORT():
+    while(True):
+        ports = serial.tools.list_ports.comports()
+        i = 0
+        for port, desc, hwid in ports:
+            print(str(i)+"\t{}: {}".format(port, desc))
+            i=i+1
+        port=integer_question("What is the port number?\nIf there isn't the desired port write: -1")
+        if(port<=i):
+            break
+        print("Port number doesn't exist")
+    return ports[port][0]
+
 
 def c2d(expr,Tc):
     new=cancel(expr)
