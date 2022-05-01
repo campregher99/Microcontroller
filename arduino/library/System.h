@@ -1,7 +1,9 @@
 #ifndef SYSTEM_H
-#define SYSTEM_H value
+#define SYSTEM_H
 
 #include "Queue.h"
+
+
 
 class System
 {
@@ -19,6 +21,7 @@ public:
     float out(float _input);
     void set_coeffs(float* _input_coeff, float* _output_coeff);
     void set_coeffs(float* _input_coeff, float* _output_coeff,unsigned short int _number_input, unsigned short int _number_output);
+    
 
     
 };

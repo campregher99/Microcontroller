@@ -1,7 +1,6 @@
 
 #ifndef QUEUE_H
-#define QUEUE_H value
-#endif
+#define QUEUE_H 
 
 template<typename T>
 class Queue
@@ -18,3 +17,6 @@ public:
     T operator[](unsigned int _index);
 
 };
+
+#endif
+
