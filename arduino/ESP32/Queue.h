@@ -1,7 +1,5 @@
 
 
-
-
 template<typename T> class Queue
 {
     T* elements;

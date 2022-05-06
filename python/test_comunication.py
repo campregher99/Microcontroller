@@ -5,10 +5,10 @@ import time
 import serial.tools.list_ports
 import Function as fn
 port=fn.chose_COMPORT()
-arduino = serial.Serial(port=port, baudrate=115200, timeout=.1)
+micro = serial.Serial(port=port, baudrate=115200, timeout=.1)
 def write_read(x):
-    arduino.write(bytes(x, 'utf-8'))
-    data=fn.read_COM(arduino)
+    micro.write(bytes(x, 'utf-8'))
+    data=fn.read_COM(micro)
     return data
 
 while True:

@@ -25,7 +25,7 @@ def read_COM(port):
         data = port.readline()
         if(data):
             break
-    return data
+    return str(data)
 
 
 def write_COM(port):

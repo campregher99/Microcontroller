@@ -13,5 +13,8 @@ public:
     
     void begin(float* (*_input)(), void (*_output)(float*));
     void refresh();
+
+private:
+    void setEEPROM();
 };
 #endif
