@@ -12,14 +12,4 @@
 #define OK_MSG "?OK!"
 #define ERR_MSG "?ER!"
 
-class Controller
-{
-protected:
-    float* (*input)();
-    void (*output)(float*);
-public:
-    Controller(){};
-    virtual void begin(float* (*_input)(), void (*_output)(float*));
-    virtual void refresh();
-};
 #endif

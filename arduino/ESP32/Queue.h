@@ -1,59 +1,37 @@
 
+#ifndef QUEUE_H
+#define QUEUE_H 
 
-template<typename T> class Queue
+struct Queues
 {
-    T* elements;
-    unsigned int length;
-    unsigned int last_element{0};
-public:
-    Queue(){};
-    Queue(unsigned int _length);
-    void set(unsigned int _length);
-    T push(T _element);
-    T pop(void);
-    T operator[](unsigned int _index);
-
+    unsigned short int size_;
+    int indexPop;
+    int indexPush;
+    int numberOfElements;
+    float* elements;
 };
 
-template<typename T>
-Queue<T>::Queue(unsigned int _length)
+bool pushQueue(Queues* _queue, float* _ptr);
+bool queueInitializer(Queues* _queue, unsigned short int _size);
+
+bool pushQueue(Queues* _queue, float _numb)
 {
-    elements=new T[_length];
-    length=_length;
+  for(int i = 0; i < _queue->size_-1; i++)
+  {
+    _queue->elements[_queue->size_-i]=_queue->elements[_queue->size_-i-1];
+  }
+  _queue->elements[0]=_numb;
+  return true;
 }
 
-template<typename T>
-void Queue<T>::set(unsigned int _length)
+inline bool queueInitializer(Queues* _queue, unsigned short int _size)
 {
-    elements=new T[_length];
-    length=_length;
+  _queue->size_=_size;
+  _queue->indexPush=0;
+  _queue->indexPop=0;
+  _queue->numberOfElements=0;
+  _queue->elements= new float[_size];
+  return true;
 }
 
-template<typename T>
-T Queue<T>::push(T _element)
-{
-    for(int i = 0; i < length - 1; i++)
-    {
-        elements[i + 1] = elements[i];
-    }
-    elements[0] = _element;
-    last_element++;
-    if(last_element > length - 1)
-    {
-        last_element = length - 1;
-    }
-    return _element;
-}
-
-template<typename T>
-T Queue<T>::pop(void)
-{
-    last_element --;
-    return elements[last_element + 1];
-}
-
-template<typename T>
-T Queue<T>::operator[](unsigned int _index)
-{
-    return elements[_index];
-}
+#endif
