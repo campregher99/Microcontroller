@@ -1,5 +1,6 @@
-#include "PID.h"
+#include "System.h"
 
+/*
 float* input();
 void output(float* _output);
 
@@ -48,4 +49,19 @@ float* input()
 void output(float* _output)
 {
   Serial.println(_output[0]);
+}
+*/
+float in[]={1, 2, 3.2, 5},out[]={6, -5, 2,5.6};
+System prova;
+void setup(){
+  prova.initialize(4,4);
+  prova.set_in_coeff(in);
+  prova.set_out_coeff(out);
+  Serial.begin(9600);
+  Serial.print(prova.out(1));
+  Serial.print(prova.out(2.2));
+}
+
+void loop(){
+
 }

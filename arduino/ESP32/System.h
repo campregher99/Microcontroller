@@ -1,28 +1,22 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-#include "Arduino.h"
 #include "Queue.h"
 
-struct System
+class System
 {
-    float* input_coeff;
-    float* output_coeff;
-    Queues input;
-    Queues output;
-    unsigned short int number_input;
-    unsigned short int number_output;
+    Queue* input_coeff;
+    Queue* output_coeff;
+    Queue* input;
+    Queue* output;
+public:
+    System(unsigned int _input, unsigned int _output);
+    System(){};
+    ~System();
+    float out(float _input);
+    void set_in_coeff(float* _coeff);
+    void set_out_coeff(float* _coeff);
+    void initialize(unsigned int _input, unsigned int _output)
 };
-
-    
-    void system_inizializer(System* _sys,unsigned short int _number_input, unsigned short int _number_output);
-    float sys_out(System* _sys, float _input);
-    void sys_set_coeffs(System* _sys, float* _input_coeff, float* _output_coeff);
-    void sys_set_coeffs(System* _sys, float* _input_coeff, float* _output_coeff,unsigned short int _number_input, unsigned short int _number_output);
-    
-
-    
-
-
 
 #endif

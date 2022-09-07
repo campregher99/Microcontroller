@@ -1,41 +1,29 @@
 #include "System.h"
 
-
-void system_inizializer(System* _sys, unsigned short int _number_input, unsigned short int _number_output)
+System::System(unsigned int _input, unsigned int _output)
 {
-    queueInitializer(&(_sys->input), _number_input);
-    queueInitializer(&(_sys->output), _number_output);
+    input_coeff=new Queue(_input);
+    input=new Queue(_input);
+    output_coeff=new Queue(_output);
+    output=new Queue(_output);
 }
 
-
-float sys_out(System* _sys, float _input)
+float System::out(float _input)
 {
-    float out{0};
-    pushQueue(&(_sys->input), _input);
-    for(int i = 0; i < _sys->number_input; i++)
-    {
-        out += _sys->input.elements[i]*_sys->input_coeff[i];
-    }
-    for(int i = 0; i < _sys->number_output; i++)
-    {
-        out += _sys->output.elements[i]*_sys->output_coeff[i];
-    }
-    pushQueue(&(_sys->output),out);
-    return out;
+    input->push(_input);
+    float result;
+    result=*input*(*input_coeff)+(*output)*(*output_coeff);
+    output->push(result);
+    return result;
 }
 
-
-void sys_set_coeffs(System* _sys, float* _input_coeff, float* _output_coeff)
+void System::set_in_coeff(float* _coeff)
 {
-    _sys->input_coeff = _input_coeff;
-    _sys->output_coeff = _output_coeff;
+    input_coeff->set_elements(_coeff);
 }
 
-
-void sys_sys_set_coeffs(System* _sys, float* _input_coeff, float* _output_coeff, unsigned short int _number_input, unsigned short int _number_output)
+void System::set_out_coeff(float* _coeff)
 {
-    queueInitializer(&(_sys->input), _number_input);
-    queueInitializer(&(_sys->output), _number_output);
-    _sys->input_coeff = _input_coeff;
-    _sys->output_coeff = _output_coeff;
+    output_coeff->set_elements(_coeff);
 }
+

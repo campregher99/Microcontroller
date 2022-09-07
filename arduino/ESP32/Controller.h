@@ -12,4 +12,12 @@
 #define OK_MSG "?OK!"
 #define ERR_MSG "?ER!"
 
+class Controller
+{
+public:
+	Controller();
+	~Controller();
+	
+};
+
 #endif

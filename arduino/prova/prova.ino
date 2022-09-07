@@ -1,32 +1,35 @@
 
-#include "Queue.h"
+#include "System.h"
 
-float* input();
-void output(float* _output);
 
 #define PIN 13
-
-Queue<float> bello;
+float arr[]={2.2 , -5};
+System s(2,2);
+Queue p(3),c(3,5.1);
 void setup() {
     Serial.begin(115200);
+    while(!Serial);
+    
     pinMode(PIN, OUTPUT);
-    bello.set(10);
-    bello.push(12);
-    Serial.println(bello[0]);
+    //Serial.println(p[0]);
+    p.push(2.2);
+    //p.print_();
+    
+    p.push(2.5);
+    
+    Queue d(p.get_size(),p.get_elements());
+    d.print_();
+    
+    /*p.print_();
+    Serial.println(p[2]);
+    Serial.println(p*c);*/
+    s.set_in_coeff(arr);
+    s.set_out_coeff(arr);
     
     
 }
 
 void loop() {
-
-}
-
-float* input()
-{
-    return new float {(float)analogRead(A0)};
-}
-
-void output(float* _output)
-{
-    analogWrite(PIN, _output[0]);
+  Serial.println(s.out(2.2));
+  delay(500);
 }
