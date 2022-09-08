@@ -9,11 +9,11 @@ class System
     Queue output_coeff;
     Queue input;
     Queue output;
-public:
+  public:
     //Constructors
     System(unsigned int _input, unsigned int _output);
-    System(){};
-    
+    System() {};
+
     float out(float _input);    //update the system status
     void set_in_coeff(float* _coeff);   //set input coefficents
     void set_out_coeff(float* _coeff);  //set output coefficents

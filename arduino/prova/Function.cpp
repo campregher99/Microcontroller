@@ -58,9 +58,17 @@ String* read_msg(int* _len)
     is_first = false;
     while (!Serial.available());
     msg = Serial.readStringUntil(ENDER);
+    msg = msg.substring(0, msg.length() - 1);
+
+#ifdef DEBUG
+    Serial.println("msg received without ender");
+    Serial.println(msg);
+#endif
+
     clear_in_buffer();
     strs = split(msg, SEPARATOR, _len);
   } while (strs[0] != STARTER);
   strs = &(strs[1]);
+  *_len -= 1;
   return strs;
 }
