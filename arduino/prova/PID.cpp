@@ -27,10 +27,8 @@ uint64_t PID::begin_(float (*_input)(), void (*_output)(float))
 
   if (index != EEPROM_SIZE)
   { //eeprom not initialized
-    while (!Serial.available()) { //waiting for Serial comunication
-      ;
-    }
-    clear_in_buffer();
+    wait_serial();    //waiting for Serial comunication
+
     Serial.println(NOT_INI_EEP);
     setEEPROM();	//initial settings
 

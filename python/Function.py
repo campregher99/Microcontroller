@@ -114,6 +114,17 @@ def float_question(question):
         if not isExept:
             return number
 
+def perc_question(question):
+    while True:
+        print(question)
+        isExept=False
+        try:
+            number = float(input())
+        except:
+            isExept=True
+        if not (isExept or number>100 or number<0):
+            return number
+
 def insert_sys(string):
     print(string)
     while True:

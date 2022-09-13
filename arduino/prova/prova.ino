@@ -58,7 +58,7 @@ void loop() {
 
 float input()
 {
-  return (float)analogRead(A0);
+  return (float)analogRead(4);
 }
 
 void output(float _output)
