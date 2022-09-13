@@ -5,7 +5,7 @@ PID::PID()
   sys.initialize(INPUT_, OUTPUT_);
 }
 
-long unsigned int PID::begin_(float (*_input)(), void (*_output)(float))
+uint64_t PID::begin_(float (*_input)(), void (*_output)(float))
 {
   //initialize input/output functions
   input = _input;
@@ -14,9 +14,6 @@ long unsigned int PID::begin_(float (*_input)(), void (*_output)(float))
   //communications initialization
   Serial.begin(115200);
   EEPROM.begin(EEPROM_SIZE);
-  while (!Serial) { //waiting for Serial comunication
-    ;
-  }
 
   int index;
   EEPROM.get(0, index);
@@ -26,10 +23,14 @@ long unsigned int PID::begin_(float (*_input)(), void (*_output)(float))
   Serial.println(index);
 #endif
 
-  long unsigned int Ts;		//sampling time
+  uint64_t Ts;		//sampling time
 
   if (index != EEPROM_SIZE)
   { //eeprom not initialized
+    while (!Serial.available()) { //waiting for Serial comunication
+      ;
+    }
+    clear_in_buffer();
     Serial.println(NOT_INI_EEP);
     setEEPROM();	//initial settings
 
@@ -51,6 +52,8 @@ long unsigned int PID::begin_(float (*_input)(), void (*_output)(float))
     int len;
     strs = read_msg(&len);
     Ts = strs[0].toInt();
+    EEPROM.put(EEP_TS, Ts);
+    EEPROM.commit();
     Serial.println(OK_MSG);
 
 #ifdef DEBUG
@@ -59,7 +62,6 @@ long unsigned int PID::begin_(float (*_input)(), void (*_output)(float))
   }
   else
   { //eeprom initialized
-    Ts = 2000000;
 
     Serial.println(INI_EEP);
 
@@ -81,6 +83,8 @@ long unsigned int PID::begin_(float (*_input)(), void (*_output)(float))
       EEPROM.get(i, output_coeff[(i - sizeof(int) * 1 - sizeof(float) * INPUT_) / sizeof(float)]);
     }
 
+    EEPROM.get(EEP_TS, Ts);
+
     sys.set_coeffs(input_coeff, output_coeff);
 
 #ifdef DEBUG
@@ -96,6 +100,9 @@ void PID::refresh()
   in = input();
   out = sys.out(in);
   output(out);
+#ifdef DEBUG
+  Serial.println(out);
+#endif
 }
 
 void PID::setEEPROM()

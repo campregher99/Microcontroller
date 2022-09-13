@@ -58,7 +58,7 @@ String* read_msg(int* _len)
     is_first = false;
     while (!Serial.available());
     msg = Serial.readStringUntil(ENDER);
-    msg = msg.substring(0, msg.length() - 1);
+    msg = msg.substring(0, msg.length());
 
 #ifdef DEBUG
     Serial.println("msg received without ender");

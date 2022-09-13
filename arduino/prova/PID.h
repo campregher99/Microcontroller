@@ -7,6 +7,7 @@
 
 #define INPUT_ 3
 #define OUTPUT_ 2
+#define EEP_TS 24 //locatione where is saved sampling time in eeprom
 
 class PID
 {
@@ -15,7 +16,7 @@ class PID
     void (*output)(float);
   public:
     PID();
-    long unsigned int begin_(float (*_input)(), void (*_output)(float));
+    uint64_t begin_(float (*_input)(), void (*_output)(float));
     void refresh();
 
   private:

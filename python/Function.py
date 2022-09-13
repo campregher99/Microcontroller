@@ -39,7 +39,7 @@ def chose_COMPORT():
             print(str(i)+"\t{}: {}".format(port, desc))
             i=i+1
         port=integer_question("What is the port number?\nIf there isn't the desired port write: -1")
-        if(port<=i):
+        if(port<=i and port>=0):
             break
         print("Port number doesn't exist")
     return ports[port][0]
@@ -127,6 +127,26 @@ def insert_sys(string):
             return sys
         print("There is an error in your input system:\n"+sys)
 
+def insert_PID(string):
+    print(string)
+    while True:
+        is_ok = True
+        print("Kp:\t")
+        Kp=input()
+        print("Ti:\t")
+        Ti = input()
+        print("Td:\t")
+        Td = input()
+        print("N:\t")
+        N = input()
+        sys=Kp+"*(1+1/(s*"+Ti+")+"+Td+"*s/("+Td+"/"+N+"*s+1))"
+        try:
+            sys = parse_expr(sys)
+        except:
+            is_ok = False
+        if (is_ok):
+            return sys
+        print("There is an error in your input system:\n" + sys)
 
 def zpk_data(expr,var):
     num,den=fraction(expr)
