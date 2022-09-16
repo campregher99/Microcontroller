@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import time
 
 import serial
 import Function as fn
@@ -12,6 +13,20 @@ separator="/"
 #sympy library functions initialization
 init_printing() # doctest: +SKIP
 s, z = symbols("s, z")
+
+#loading identification data
+data=fn.open_data_user()
+
+
+#building controller
+pid=cancel(fn.PID(K=data[0],L=data[1],T=data[2],N=5,method="Hal")[0])
+pprint(pid)
+zpk_s=fn.zpk_data(pid,s)
+print(zpk_s)
+print(max([max([abs(el) for el in zpk_s[0]]),max([abs(el) for el in zpk_s[1]])]))
+max_pz=max([max([abs(el) for el in zpk_s[0]]),max([abs(el) for el in zpk_s[1]])])*10
+pid=cancel(pid/(s/max_pz+1))
+pprint(pid)
 
 #sure that the micro was erased
 if not fn.digital_question("Have you erased microcontroller?"):
@@ -35,7 +50,7 @@ elif(msg.split("!")[0].split("?")[1]!="NE"):
         c = 0
 
 #system acquisition
-expr = fn.insert_PID("insert the system:")
+expr = pid
 expr=cancel(expr)
 pprint(expr)
 
@@ -51,6 +66,8 @@ pprint(coeff_u)
 pprint(coeff_y)
 msg=starter
 msg=msg+separator+str(1+len(coeff_y)+len(coeff_u))
+msg=msg+separator+str(len(coeff_u))
+msg=msg+separator+str(len(coeff_y))
 for el in coeff_u:
     msg=msg+separator+str(el)
 for el in coeff_y:
@@ -74,14 +91,18 @@ zexpr=fn.c2d(expr,Ts)
 pprint(zexpr)
 coeff_u,coeff_y=fn.coeff4micro(zexpr)
 msg=starter
-msg=msg+separator+str(3+len(coeff_y)+len(coeff_u))
+msg=msg+separator+str(1+len(coeff_y)+len(coeff_u))
+msg=msg+separator+str(len(coeff_u))
+msg=msg+separator+str(len(coeff_y))
 for el in coeff_u:
     msg=msg+separator+str(el)
 for el in coeff_y:
     msg=msg+separator+str(el)
 msg=msg+ender
+print(msg)
 micro.write(bytes(msg, 'utf-8'))
 msg=starter+separator+str(Ts*1000000)+ender
+time.sleep(0.1)
 micro.write(bytes(msg,'utf-8'))
 data=fn.read_COM(micro)
 print(data)

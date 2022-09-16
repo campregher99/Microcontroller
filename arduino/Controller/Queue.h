@@ -26,7 +26,7 @@ class Queue
 
     //overload operator
     float operator*(Queue _queue);
-    float operator[](unsigned int _index);
+    float& operator[](unsigned int _index);
 
     void print_();    //print the elements on Serial
 };

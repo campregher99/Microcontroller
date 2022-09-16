@@ -80,7 +80,7 @@ float Queue::operator*(Queue _queue)
   return result;
 }
 
-float Queue::operator[](unsigned int _index)
+float& Queue::operator[](unsigned int _index)
 {
   return elements[_index];
 }

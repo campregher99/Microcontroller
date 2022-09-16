@@ -20,6 +20,7 @@ class System
     void set_coeffs(float* _c_in, float* _c_out);   //set all coefficents
     void initialize(unsigned int _input, unsigned int _output); //initialize the system for empty constructor
     void print_();      //print the coefficent on Serial
+    void set_output(float _output);   //overwrite the last value of output
 };
 
 #endif

@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 //#define DEBUG	//enable debug mode if not commented
+#define MONITOR //enable monitoring mode if not commented
 #include "Arduino.h"
 #include "EEPROM.h"
 

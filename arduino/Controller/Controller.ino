@@ -35,6 +35,10 @@ void setup() {
 #endif
   Serial.println(T);
 
+#ifdef MONITOR
+  wait_serial();
+  Serial.println("input,ref,output");
+#endif
 
   //timer initialization
   timer = timerBegin(0, 80, true);
@@ -63,14 +67,42 @@ float input()
   static float ref = 0;
   input = (float)analogRead(4);
   if (is_first)
-    delayMicroseconds(400);
+  {
+    delayMicroseconds(500);
+#ifdef MONITOR
+    delayMicroseconds(280);
+#endif
+  } else
+  {
+#ifdef MONITOR
+    Serial.print(input);
+    Serial.print(",");
+    Serial.print(ref);
+    Serial.print(",");
+#endif
+  }
   if (Serial.available())
+  {
     ref = Serial.readStringUntil(ENDER).toFloat();
+    clear_in_buffer();
+  }
   is_first = false;
   return ref - input;
 }
 
 void output(float _output)
 {
-  ledcWrite(CHANNEL_PWM, _output* (pow(2, RESOLUTION_PWM) - 1) / 100);
+  float out=_output;
+#ifdef MONITOR
+  static bool is_first = true;
+  if (is_first)
+  {
+    delayMicroseconds(180);
+  } else
+  {
+    Serial.println(_output);
+  }
+  is_first = false;
+#endif
+  ledcWrite(CHANNEL_PWM, _output * (pow(2, RESOLUTION_PWM) - 1) / 100);
 }

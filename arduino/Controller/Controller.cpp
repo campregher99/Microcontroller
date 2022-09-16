@@ -95,7 +95,17 @@ void Controller::refresh()
   float in, out;
   in = input();
   out = sys.out(in);
+
+  //anti windup
+  if(out<0)
+  {
+    out=0;
+  }else if(out>100)
+  {
+    out=100;
+  }
   output(out);
+  sys.set_output(out);
 #ifdef DEBUG
   Serial.println(out);
 #endif

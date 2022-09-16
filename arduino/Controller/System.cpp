@@ -56,3 +56,8 @@ void System::print_()
   output_coeff.print_();
 
 }
+
+void System::set_output(float _output)
+{
+  output[0]=_output;
+}
