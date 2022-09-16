@@ -6,7 +6,7 @@ void output(float _output);
 Tuning t;
 void setup() {
   // put your setup code here, to run once:
-  t.begin_(input,output);
+  t.begin_(input, output);
 }
 
 void loop() {

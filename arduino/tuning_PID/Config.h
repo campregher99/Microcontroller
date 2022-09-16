@@ -1,7 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define DEBUG	//enable debug mode if not commented
+//#define DEBUG	//enables debug mode if not commented
+//#define MONITOR //enables monitor mode if not commented
 #include "Arduino.h"
 
 //communication standard: "?/x/x/x!"
@@ -16,5 +17,7 @@
 #define CHANNEL_PWM 0
 #define RESOLUTION_PWM 8
 #define PIN_PWM 16
+
+#define E 2.718281828
 
 #endif

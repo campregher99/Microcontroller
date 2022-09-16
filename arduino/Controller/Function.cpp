@@ -76,7 +76,7 @@ String* read_msg(int* _len)
 void wait_serial()
 {
   while (!Serial.available()) {   //wait for an incoming communication
-    ;
-  }
-  clear_in_buffer();            //clear the serial buffer
+      ;
+    }
+    clear_in_buffer();            //clear the serial buffer
 }

@@ -1,11 +1,6 @@
-#include "PID.h"
+#include "Controller.h"
 
-PID::PID()
-{
-  sys.initialize(INPUT_, OUTPUT_);
-}
-
-uint64_t PID::begin_(float (*_input)(), void (*_output)(float))
+uint64_t Controller::begin_(float (*_input)(), void (*_output)(float))
 {
   //initialize input/output functions
   input = _input;
@@ -63,26 +58,29 @@ uint64_t PID::begin_(float (*_input)(), void (*_output)(float))
 
     Serial.println(INI_EEP);
 
-    float input_coeff[INPUT_];
-    float output_coeff[OUTPUT_];
+    int input_size, output_size;
+
+    EEPROM.get(sizeof(int), input_size);
+    EEPROM.get(sizeof(int) * 2, output_size);
+
+    float input_coeff[input_size];
+    float output_coeff[output_size];
     float store;
 
-    for (int i = sizeof(int) * 1; i - sizeof(int) * 1 < sizeof(float) * INPUT_; i = i + sizeof(float))
+    for (int i = sizeof(int) * 3; i - sizeof(int) * 3 < sizeof(float) * input_size; i = i + sizeof(float))
     {
       EEPROM.get(i, store);
-      input_coeff[(i - sizeof(int) * 1) / sizeof(float)] = store;
-#ifdef DEBUG
-      Serial.println(store);
-#endif
+      input_coeff[(i - sizeof(int) * 3) / sizeof(float)] = store;
     }
 
-    for (int i = sizeof(int) * 1 + sizeof(float) * INPUT_; i - sizeof(int) * 1 - sizeof(float) * INPUT_ < sizeof(float) * OUTPUT_; i = i + sizeof(float))
+    for (int i = sizeof(int) * 3 + sizeof(float) * 20; i - sizeof(int) * 3 - sizeof(float) * 20 < sizeof(float) * output_size; i = i + sizeof(float))
     {
-      EEPROM.get(i, output_coeff[(i - sizeof(int) * 1 - sizeof(float) * INPUT_) / sizeof(float)]);
+      EEPROM.get(i, output_coeff[(i - sizeof(int) * 3 - sizeof(float) * 20) / sizeof(float)]);
     }
 
     EEPROM.get(EEP_TS, Ts);
 
+    sys.initialize(input_size, output_size);
     sys.set_coeffs(input_coeff, output_coeff);
 
 #ifdef DEBUG
@@ -92,7 +90,7 @@ uint64_t PID::begin_(float (*_input)(), void (*_output)(float))
   return Ts;
 }
 
-void PID::refresh()
+void Controller::refresh()
 {
   float in, out;
   in = input();
@@ -103,10 +101,11 @@ void PID::refresh()
 #endif
 }
 
-void PID::setEEPROM()
+void Controller::setEEPROM()
 {
+  static bool is_first = true;
   String* strs;
-  int len;
+  int len, input_size, output_size;
   do
   {
     strs = read_msg(&len);	//read message from serial and parse it
@@ -114,9 +113,11 @@ void PID::setEEPROM()
     Serial.println(strs[0]);
     Serial.println(len);
 #endif
-  } while (len != INPUT_ + OUTPUT_ + 1);	//check if the message length isn't correct otherwise moves on
-  float input_coeff[INPUT_];
-  float output_coeff[OUTPUT_];
+  } while (len < 5);	//check if the message length isn't correct otherwise moves on
+  input_size = strs[1].toInt();
+  output_size = strs[2].toInt();
+  float input_coeff[input_size];
+  float output_coeff[output_size];
 
 #ifdef DEBUG
   Serial.println("message correct");
@@ -124,9 +125,9 @@ void PID::setEEPROM()
 #endif
 
   //reading input coefficents
-  for (int i = 1; i - 1 < INPUT_; i++)
+  for (int i = 3; i - 3 < input_size; i++)
   {
-    input_coeff[i - 1] = strs[i].toFloat();
+    input_coeff[i - 3] = strs[i].toFloat();
 #ifdef DEBUG
     Serial.println(strs[i].toFloat());
 #endif
@@ -137,26 +138,36 @@ void PID::setEEPROM()
 #endif
 
   //reading output coefficents
-  for (int i = 1 + INPUT_; i - 1 - INPUT_ < OUTPUT_; i++)
+  for (int i = 3 + input_size; i - 3 - input_size < output_size; i++)
   {
-    output_coeff[i - 1 - INPUT_] = strs[i].toFloat();
+    output_coeff[i - 3 - input_size] = strs[i].toFloat();
 #ifdef DEBUG
     Serial.println(strs[i].toFloat());
 #endif
   }
 
   //saving data in the eeprom
-  EEPROM.put(0, EEPROM_SIZE);
-  for (int i = sizeof(int) * 1; i - sizeof(int) * 1 < sizeof(float) * INPUT_; i = i + sizeof(float))
+  if (is_first)
   {
-    EEPROM.put(i, input_coeff[(i - sizeof(int)) / sizeof(float)]);
+    EEPROM.put(0, EEPROM_SIZE);
+    EEPROM.put(sizeof(int), input_size);
+    EEPROM.put(sizeof(int) * 2, output_size);
   }
-  for (int i = sizeof(int) * 1 + sizeof(float) * INPUT_; i - sizeof(int) * 1 - sizeof(float) * INPUT_ < sizeof(float) * OUTPUT_; i = i + sizeof(float))
+  for (int i = sizeof(int) * 3; i - sizeof(int) * 3 < sizeof(float) * input_size; i = i + sizeof(float))
   {
-    EEPROM.put(i, output_coeff[(i - sizeof(int) - sizeof(float) * INPUT_) / sizeof(float)]);
+    EEPROM.put(i, input_coeff[(i - sizeof(int) * 3) / sizeof(float)]);
+  }
+  for (int i = sizeof(int) * 3 + sizeof(float) * 20; i - sizeof(int) * 3 - sizeof(float) * 20 < sizeof(float) * output_size; i = i + sizeof(float))
+  {
+    EEPROM.put(i, output_coeff[(i - sizeof(int) * 3 - sizeof(float) * 20) / sizeof(float)]);
   }
 
   //settings the system coefficents
+  if (is_first)
+  {
+    sys.initialize(input_size, output_size);
+    is_first = false;
+  }
   sys.set_coeffs(input_coeff, output_coeff);
 
 #ifdef DEBUG

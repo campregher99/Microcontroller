@@ -20,15 +20,9 @@ class Queue
 
     void push(float _el);   //shift all the element and insert the new one
     float pop();            //return the last elements
-    void clear_();          //make 0 all the elements
     unsigned short int get_size() const;  //return the queue size
     float* get_elements() const;          //return the pointer to the elements
     void set_elements(float* _elements);  //permit to fill all the elements at once
-    float mean();   //return the mean value
-    float max_();    //return the max value
-    float min_();    //return the min value
-    float iae();      //return the sum of the absolute error respect the mean
-    float std();    //return the standard deviation at 68% (*2 => 95% ; *3 => 99%)
 
     //overload operator
     float operator*(Queue _queue);
