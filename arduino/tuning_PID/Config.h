@@ -11,6 +11,7 @@
 #define ENDER '!'
 #define OK_MSG "?OK!"
 #define ERR_MSG "?ER!"
+#define START_MSG "?STR!"
 
 //PWM parameter
 #define FREQ_PWM 5000
@@ -19,5 +20,6 @@
 #define PIN_PWM 16
 
 #define E 2.718281828
+#define SAMPLING_DIV 10000
 
 #endif

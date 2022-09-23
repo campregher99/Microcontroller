@@ -30,8 +30,8 @@ def read_COM(port):
     return str(data)
 
 
-def write_COM(port):
-    port.write(bytes(x, 'utf-8'))
+def write_COM(port,msg):
+    port.write(bytes(msg, 'utf-8'))
 
 def chose_COMPORT():
     while(True):
@@ -53,6 +53,11 @@ def c2d(expr,Tc):
     new=simp_expr(new)
     return new
 
+def d2c(expr,Tc):
+    new = cancel(expr)
+    new = new.subs(z, (1+Tc/2*s)/(1-Tc/2*s))
+    new = simp_expr(new)
+    return new
 
 def simp_expr(expr):
     if expr.is_Pow:
@@ -133,6 +138,15 @@ def str_question(question):
         str = input()
         if not str=="":
             return str
+
+def multiple_choice(question, choices):
+    while True:
+        for i, choice in enumerate(choices):
+            print(str(i)+"-\t"+str(choice))
+        ch=integer_question(question)
+        if ch >= 0 and ch < len(choices):
+            return ch
+            break
 
 def insert_sys(string):
     print(string)
@@ -228,9 +242,9 @@ def coeff4micro(expr):
     num,den=fraction(expr)
     coef_n=Poly(num,z).all_coeffs()
     coef_d=Poly(den,z).all_coeffs()
-    coef_n=[coeff/coef_d[0] for coeff in coef_n]
-    coef_d=[-coeff/coef_d[0] for coeff in coef_d[1:]]
-    return coef_n,coef_d
+    coef_n=np.array([coeff/coef_d[0] for coeff in coef_n])
+    coef_d=np.array([-coeff/coef_d[0] for coeff in coef_d[1:]])
+    return coef_n.tolist(),coef_d.tolist()
 
 
 def open_data(name):
@@ -283,6 +297,13 @@ def open_data_user():
     file.close()
     return data
 
+def save_data_user(data):
+    root = tk.Tk()
+    root.withdraw()
+    file_path = filedialog.asksaveasfilename()
+    file = open(file_path, "wb")
+    pickle.dump(data, file)
+    file.close()
 
 def plot_data(data_x,data_y,label_x="x",label_y="y",fig=1):
     plt.figure(fig)
@@ -405,3 +426,12 @@ def PID(K=0,Kstar=0,T=0,Tstar=0,L=0,N=10,method="CHR-SP-0",type=1):
             Cc = kp * (1 + 1 / Ti / s + Td * s / (Td / N * s + 1))
             Cf = kp * (b + 1 / Ti / s + Td * s / (Td / N * s + 1))
     return [Cc, Cf]
+
+def array2onezero(array):
+    new=np.empty(array.size)
+    for i,el in enumerate(array):
+        if abs(el) > 0:
+            new[i]=1
+        else:
+            new[i]=0
+    return new

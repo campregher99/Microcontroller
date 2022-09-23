@@ -34,57 +34,122 @@ void Tuning::begin_(float (*_input)(), void (*_output)(float))
 
   Serial.println(OK_MSG);
 
-  //variables initialization
-  unsigned long long int time_delay, settling_time, sampling_time;
-  float max_input, std, T, L, K, noise_;
+  msg = read_msg(&len);
 
-  //measure noise
-  noise_=noise(perc);
+  if (msg[0] == "AM")	//areas method
+  {
+    //variables initialization
+    unsigned long long int time_delay, settling_time, sampling_time;
+    float max_input, std, T, L, K, noise_;
 
-  //search delay time
-  time_delay = search_delay(perc);
+    //measure noise
+    noise_ = noise(perc);
 
-#ifdef DEBUG
-  Serial.print("Delay time[s]:\t");
-  Serial.println(time_delay / 1000000.0);
-#endif
-
-  //serch settling time
-  settling_time = search_settling(perc, time_delay, &std, &max_input);
+    //search delay time
+    time_delay = search_delay(perc);
 
 #ifdef DEBUG
-  Serial.print("settling time found\nTs[s]:\t");
-  Serial.println(settling_time / 1000000.0);
+    Serial.print("Delay time[s]:\t");
+    Serial.println(time_delay / 1000000.0);
 #endif
 
-  sampling_time = settling_time / 10000;
-  K = max_input / perc;		//dc gain of the process
-  areas_mtd(perc, sampling_time, max_input, &L, &T);
-  String send_;
-  send_ = STARTER;
-  send_ += SEPARATOR;
-  Serial.print(send_);
-  Serial.print(K, 9);
-  Serial.print(SEPARATOR);
-  Serial.print(L, 9);
-  Serial.print(SEPARATOR);
-  Serial.print(T, 9);
-  Serial.print(SEPARATOR);
-  Serial.print(std, 9);
-  Serial.print(SEPARATOR);
-  Serial.print(noise_, 9);
-  Serial.println(ENDER);
+    //serch settling time
+    settling_time = search_settling(perc, time_delay, &std, &max_input);
 
 #ifdef DEBUG
-  Serial.print("Areas method result:\nK:\t");
-  Serial.println(K);
-  Serial.print("L:\t");
-  Serial.println(L);
-  Serial.print("T:\t");
-  Serial.println(T);
-  Serial.print("standard deviation:\t");
-  Serial.println(std);
+    Serial.print("settling time found\nTs[s]:\t");
+    Serial.println(settling_time / 1000000.0);
 #endif
+
+    sampling_time = settling_time / SAMPLING_DIV;
+    K = max_input / perc;		//dc gain of the process
+    areas_mtd(perc, sampling_time, max_input, &L, &T);
+    String send_;
+    send_ = STARTER;
+    send_ += SEPARATOR;
+    Serial.print(send_);
+    Serial.print(K, 9);
+    Serial.print(SEPARATOR);
+    Serial.print(L, 9);
+    Serial.print(SEPARATOR);
+    Serial.print(T, 9);
+    Serial.print(SEPARATOR);
+    Serial.print(std, 9);
+    Serial.print(SEPARATOR);
+    Serial.print(noise_, 9);
+    Serial.println(ENDER);
+
+#ifdef DEBUG
+    Serial.print("Areas method result:\nK:\t");
+    Serial.println(K);
+    Serial.print("L:\t");
+    Serial.println(L);
+    Serial.print("T:\t");
+    Serial.println(T);
+    Serial.print("standard deviation:\t");
+    Serial.println(std);
+#endif
+  } else if (msg[0] == "ST")		//stream data for next analysis
+  {
+#ifdef DEBUG
+    Serial.println("Streaming data");
+#endif
+
+    unsigned long long int time_delay, settling_time, sampling_time, time_;
+    float max_input, std, noise_;
+
+    //measure noise
+    noise_ = noise(perc);
+
+    //search delay time
+    time_delay = search_delay(perc);
+
+#ifdef DEBUG
+    Serial.print("Delay time[s]:\t");
+    Serial.println(time_delay / 1000000.0);
+#endif
+
+    //serch settling time
+    settling_time = search_settling(perc, time_delay, &std, &max_input);
+
+#ifdef DEBUG
+    Serial.print("settling time found\nTs[s]:\t");
+    Serial.println(settling_time / 1000000.0);
+#endif
+
+    sampling_time = settling_time / SAMPLING_DIV;
+
+    Serial.print(STARTER);
+    Serial.print(sampling_time,9);
+    Serial.println(ENDER);
+
+    msg = read_msg(&len);
+    if (msg[0] != "OK")
+    {
+      Serial.println(ERR_MSG);
+      return;
+    }
+
+    time_ = micros();
+    Serial.println(input());
+    for (int i = 0; i < SAMPLING_DIV * 0.5 - 1; i++)
+    {
+      while (micros() - time_ < sampling_time);
+      time_ = micros();
+      Serial.println(input());
+    }
+
+    ledcWrite(CHANNEL_PWM, perc * (pow(2, RESOLUTION_PWM) - 1) / 100);
+
+    for (int i = 0; i < SAMPLING_DIV * 1.5; i++)
+    {
+      while (micros() - time_ < sampling_time);
+      time_ = micros();
+      Serial.println(input());
+    }
+
+    Serial.println(OK_MSG);
+  }
 }
 
 unsigned long long int Tuning::search_delay(float _perc)
@@ -198,7 +263,7 @@ unsigned long long int Tuning::search_settling(float _perc, unsigned long long i
 #endif
     //waiting system reset
     delayMicroseconds(current_st * 1.5);
-    while (input() > initial_input);
+    //while (input() > initial_input);
 #ifdef DEBUG
     Serial.println("System resetted");
 #endif
@@ -261,10 +326,10 @@ bool Tuning::areas_mtd(float _perc, unsigned long long int _sampling_time, float
 
 float Tuning::noise(float _perc)
 {
-	Queue inputs(SIZE_I*4);
-	for(int i = 0; i < SIZE_I * 4;i++)
-	{
-		inputs.push(input());
-	}
-	return inputs.max_()/3.0;
+  Queue inputs(SIZE_I * 4);
+  for (int i = 0; i < SIZE_I * 4; i++)
+  {
+    inputs.push(input());
+  }
+  return inputs.max_() / 3.0;
 }
