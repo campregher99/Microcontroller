@@ -58,6 +58,12 @@ void Queue::clear_()
     elements[i] = 0;
 }
 
+void Queue::clear_(float _el)
+{
+  for (int i = 0; i < size_; i ++)
+    elements[i] = _el;
+}
+
 unsigned short int Queue::get_size() const
 {
   return size_;

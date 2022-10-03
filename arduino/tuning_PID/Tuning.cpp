@@ -36,7 +36,7 @@ void Tuning::begin_(float (*_input)(), void (*_output)(float))
 
   msg = read_msg(&len);
 
-  if (msg[0] == "AM")	//areas method
+  if (msg[0] == "AM")
   {
     //variables initialization
     unsigned long long int time_delay, settling_time, sampling_time;
@@ -120,7 +120,7 @@ void Tuning::begin_(float (*_input)(), void (*_output)(float))
     sampling_time = settling_time / SAMPLING_DIV;
 
     Serial.print(STARTER);
-    Serial.print(sampling_time,9);
+    Serial.print(sampling_time, 9);
     Serial.println(ENDER);
 
     msg = read_msg(&len);
@@ -149,6 +149,48 @@ void Tuning::begin_(float (*_input)(), void (*_output)(float))
     }
 
     Serial.println(OK_MSG);
+
+  } else if (msg[0] == "RM")    //relay method
+  {
+    //reading delta percentage and maximum derivative of the controller output
+    float d_perc, max_deriv, t_ult, k_ult, K, L, T, omega_ult;
+    Serial.println(OK_MSG);
+
+#ifdef DEBUG
+    Serial.println("Send ?/max_deriv!");
+#endif
+
+    msg = read_msg(&len);
+    max_deriv = msg[0].toFloat();
+
+#ifdef DEBUG
+    Serial.print("Delta percentage:\t");
+    Serial.println(d_perc, 9);
+    Serial.print("Max derivative[percentage/s]:\t");
+    Serial.println(max_deriv, 9);
+#endif
+
+    relay_mtd(perc, max_deriv,  & K, & T, & L);
+
+    String send_;
+    send_ = STARTER;
+    send_ += SEPARATOR;
+    Serial.print(send_);
+    Serial.print(K, 9);
+    Serial.print(SEPARATOR);
+    Serial.print(L, 9);
+    Serial.print(SEPARATOR);
+    Serial.print(T, 9);
+    Serial.println(ENDER);
+
+#ifdef DEBUG
+    Serial.print("Relay method result:\nK:\t");
+    Serial.println(K);
+    Serial.print("L:\t");
+    Serial.println(L);
+    Serial.print("T:\t");
+    Serial.println(T);
+#endif
   }
 }
 
@@ -332,4 +374,155 @@ float Tuning::noise(float _perc)
     inputs.push(input());
   }
   return inputs.max_() / 3.0;
+}
+
+bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, float* _l)
+{
+  float rise_time = _perc / _max_deriv, act_perc = 0, max_input, min_input, noise, steady_input, input_av, hys, d_perc;
+  Queue ult_times(10), inputs(SIZE_I), amplitude(10);
+  unsigned long long int time_, d_time, ult_t;
+  unsigned long int count = 0;
+  bool is_high, is_steady_state = false;
+
+  d_time = rise_time / (_perc * 10) * 1000000.0;
+
+#ifdef DEBUG
+  Serial.print("rise time[s]:\t");
+  Serial.println(rise_time, 9);
+  Serial.print("Frequency output variation[Hz]:\t");
+  Serial.println(1 / rise_time * (_perc * 10), 9);
+#endif
+
+  //bringing the system at the steady state
+  time_ = micros();
+  ledcWrite(CHANNEL_PWM, act_perc );
+  act_perc += 0.1;
+  while (act_perc <= _perc)
+  {
+    if (micros() - time_ >= d_time)
+    {
+      time_ = micros();
+      ledcWrite(CHANNEL_PWM, act_perc * (pow(2, RESOLUTION_PWM) - 1) / 100);
+      act_perc += 0.1;
+    }
+  }
+
+  //waiting for the steady state
+  time_ = micros();
+  inputs.push(input());
+  max_input < inputs.max_();
+  max_input = inputs.max_();
+  count = 0;
+  d_time = (micros() - time_) * 1.3;
+  max_input = input();
+  time_ = micros();
+  while (count <= SIZE_I * 4)
+  {
+    if (micros() - time_ >= d_time)
+    {
+      time_ = micros();
+      inputs.push(input());
+      if (max_input < inputs.max_())
+      {
+        max_input = inputs.max_();
+        count = 0;
+      } else
+      {
+        count++;
+      }
+    }
+  }
+
+#ifdef DEBUG
+  Serial.println("System at the steady state");
+#endif
+
+  //detection noise which will be the hysteresis
+  for (int i = 0; i < SIZE_I; i++)
+  {
+    inputs.push(input());
+    delayMicroseconds(SIZE_I);
+  }
+  noise = inputs.std() * 3;
+  hys = noise * 5;
+  steady_input = inputs.mean();
+  *_k = steady_input / _perc;
+
+  d_perc = hys * 2 / * _k;
+
+#ifdef DEBUG
+  Serial.print("noise (99%):\t");
+  Serial.println(noise, 9);
+  Serial.print("steady state input:\t");
+  Serial.println(steady_input);
+  Serial.print("K:\t");
+  Serial.println(*_k);
+  Serial.print("delta percentage:\t");
+  Serial.println(d_perc);
+#endif
+
+  //start relay method
+  inputs.clear_(steady_input);
+  time_ = micros();
+  ledcWrite(CHANNEL_PWM, (_perc + d_perc) * (pow(2, RESOLUTION_PWM) - 1) / 100);
+  is_high = true;
+  while (inputs.mean() < steady_input + noise) {
+    inputs.push(input());
+  }
+  *_l = micros() - time_;
+  while (!is_steady_state)
+  {
+    inputs.push(input());
+    input_av = inputs.mean();
+
+#ifdef MONITOR
+    Serial.print(input_av);
+    Serial.print(",");
+    Serial.print(steady_input + hys);
+    Serial.print(",");
+    Serial.print(steady_input - hys);
+    Serial.print(",");
+    Serial.println(((is_high) ? _perc + d_perc : _perc - d_perc) * *_k);
+#endif
+
+    if (is_high)
+    {
+      if (input_av > steady_input + hys)
+      {
+        ledcWrite(CHANNEL_PWM, (_perc - d_perc) * (pow(2, RESOLUTION_PWM) - 1) / 100);
+        is_high = false;
+      }
+      if (max_input < input_av)
+        max_input = input_av;
+    } else
+    {
+      if (input_av < steady_input - hys)
+      {
+        ult_t = micros() - time_;
+        ledcWrite(CHANNEL_PWM, (_perc + d_perc) * (pow(2, RESOLUTION_PWM) - 1) / 100);
+        time_ += ult_t;
+        ult_times.push(ult_t);
+        is_high = true;
+        count++;
+        /*
+          #ifdef DEBUG
+          Serial.print(ult_times.std() * 3, 4);
+          Serial.print("\t<=\t");
+          Serial.println(ult_times.mean() * 0.02, 4);
+          Serial.print("ultimate period[us]:\t");
+          Serial.println(ult_times.mean());
+          #endif*/
+        if (ult_times.std() * 3 <= ult_times.mean() * 0.02 && count >= 10)
+        {
+          is_steady_state = true;
+        }
+        amplitude.push(max_input - min_input);
+      }
+      if (min_input > input_av)
+        min_input = input_av;
+    }
+  }
+  *_t = (ult_times.mean() / 2 - *_l * 2) / log((steady_input + hys - (_perc - d_perc) * *_k) / (steady_input - hys - (_perc - d_perc) * *_k)) / 1000000.0;
+  *_l = *_l / 1000000.0;
+  return true;
 }

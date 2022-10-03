@@ -21,6 +21,7 @@ class Queue
     void push(float _el);   //shift all the element and insert the new one
     float pop();            //return the last elements
     void clear_();          //make 0 all the elements
+    void clear_(float _el);          //make equal to _el all the elements
     unsigned short int get_size() const;  //return the queue size
     float* get_elements() const;          //return the pointer to the elements
     void set_elements(float* _elements);  //permit to fill all the elements at once
