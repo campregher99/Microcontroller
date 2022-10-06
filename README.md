@@ -23,7 +23,7 @@ This project can be divided in tree main parts
 * *PID*
  + *Ziegler and Nichols* is a method used only for load disturbance rejection task. It aims to make the system dacay ratio to 0.25, which implies a damping factor of 0.22.
  + *Chien-Hrones-Reswick* it is an improovement of the Ziegler and Nichols method that implement different law for load disturbance rejection task and set point following task, morover permit to choose the desired overshoot percentage (this version only 0% or 20%).
- + *Haalman* is an analytical method that set the desired open-loop function as $$L(s)=C(s)P(s)=\frac{2}{3Ls}e^{-sL}$$.
+ + *Haalman* is an analytical method that set the desired open-loop function as: $$L(s)=C(s)P(s)=\frac{2}{3Ls}e^{-sL}$$
 * *Cancellation controller* basic structure only for system which has low disturbs, since it is based on pole-zero cancelation.
 
 **Microcontroller tested:**
