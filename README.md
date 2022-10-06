@@ -23,7 +23,7 @@ This project can be divided in tree main parts
 * *PID*
  + *Ziegler and Nichols* is a method used only for load disturbance rejection task. It aims to make the system dacay ratio to 0.25, which implies a damping factor of 0.22.
  + *Chien-Hrones-Reswick* it is an improovement of the Ziegler and Nichols method that implement different law for load disturbance rejection task and set point following task, morover permit to choose the desired overshoot percentage (this version only 0% or 20%).
- + *Haalman* is an analytical method that set the desired open-loop function as $$L(s)=C(s)P(s)=2/(3Ls)e^(-sL)$$.
+ + *Haalman* is an analytical method that set the desired open-loop function as $$$L(s)=C(s)P(s)=frac{2,3Ls}e^{-sL}$$$.
 * *Cancellation controller* basic structure only for system which has low disturbs, since it is based on pole-zero cancelation.
 
 **Microcontroller tested:**
@@ -36,10 +36,10 @@ This project can be divided in tree main parts
 	`void output(float out);`
 	`float input(void);`
  + Python: provide the user interface and save the values estimated by the microcontroller by the [micro_tuning_PID.py](https://github.com/campregher99/Microcontroller/blob/main/python/micro_tuning_PID.py) script.
- 
+
 * **Controller building**
  + Python: [Controler_design.py]() permits to choice the desired controll structure and perform the calculations in order to build the control law. Finally permit to save the generated law.
- 
+
 * **Controller implementation**
  + Arduino: [Controller.ino](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino) implement the actual code which will control the process. You have to define the input and output functins, as defined before. 
  + Python: [micro_setter.py](https://github.com/campregher99/Microcontroller/blob/main/python/micro_setter.py) uploads the deired control law on microcontroller.
@@ -73,7 +73,7 @@ The system used for the example is a RC circuit that emulate the behaviour of a 
 > **Real circuit**
 >![realRC](https://raw.githubusercontent.com/campregher99/Microcontroller/main/images/photoRC.jpg)
 > **Transform function**
-> $$G(s)=R_{2}/(R_{1}R_{2}Cs+R_{1}+R_{2})$$
+> $$G(s)=frac{R_{2},(R_{1}R_{2}Cs+R_{1}+R_{2})}$$
 
 **Values:**
 * R1 = 1012 Hom
