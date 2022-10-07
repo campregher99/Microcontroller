@@ -128,12 +128,22 @@ float Queue::iae()
 
 float Queue::std()
 {
-  float std_=0, mean_=mean();
+  float std_ = 0, mean_ = mean();
   for (int i = 0; i < size_; i++)
   {
-    std_ += pow(elements[i] - mean_,2);
+    std_ += pow(elements[i] - mean_, 2);
   }
-  return sqrt(std_/size_);
+  return sqrt(std_ / size_);
+}
+
+float Queue::slope()
+{
+  float mean_ = mean(), slope_ = 0;
+  for (int i = 0; i < size_; i++)
+  {
+    slope_ += (size_ / 2 - i) * (elements[i] - mean_);
+  }
+  return slope_ / size_;
 }
 
 float Queue::operator*(Queue _queue)

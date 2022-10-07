@@ -30,6 +30,7 @@ class Queue
     float min_();    //return the min value
     float iae();      //return the sum of the absolute error respect the mean
     float std();    //return the standard deviation at 68% (*2 => 95% ; *3 => 99%)
+    float slope();  //return the a number that represent the slope
 
     //overload operator
     float operator*(Queue _queue);

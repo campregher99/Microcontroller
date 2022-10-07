@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define DEBUG	//enables debug mode if not commented
+//#define DEBUG	//enables debug mode if not commented
 //#define MONITOR //enables monitor mode if not commented
 #include "Arduino.h"
 #include <math.h>

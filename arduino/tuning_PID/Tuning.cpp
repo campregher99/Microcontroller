@@ -6,12 +6,6 @@ void Tuning::begin_(float (*_input)(), void (*_output)(float))
   input = _input;
   output = _output;
 
-  // configure LED PWM functionalitites
-  ledcSetup(CHANNEL_PWM, FREQ_PWM, RESOLUTION_PWM);
-
-  // attach the channel to the GPIO to be controlled
-  ledcAttachPin(PIN_PWM, CHANNEL_PWM);
-
   String* msg;
   //serial initialization and synchronization
   Serial.begin(115200);
@@ -139,7 +133,7 @@ void Tuning::begin_(float (*_input)(), void (*_output)(float))
       Serial.println(input());
     }
 
-    ledcWrite(CHANNEL_PWM, perc * (pow(2, RESOLUTION_PWM) - 1) / 100);
+    output(perc);
 
     for (int i = 0; i < SAMPLING_DIV * 1.5; i++)
     {
@@ -162,6 +156,7 @@ void Tuning::begin_(float (*_input)(), void (*_output)(float))
 
     msg = read_msg(&len);
     max_deriv = msg[0].toFloat();
+    Serial.println(OK_MSG);
 
 #ifdef DEBUG
     Serial.print("Delta percentage:\t");
@@ -200,7 +195,7 @@ unsigned long long int Tuning::search_delay(float _perc)
   unsigned long long int time_;
   Queue inputs(SIZE_I);
   initial_input = input();
-  ledcWrite(CHANNEL_PWM, _perc * (pow(2, RESOLUTION_PWM) - 1) / 100);
+  output(_perc);
   time_ = micros();
   inputs.push(initial_input);
   while (initial_input >= inputs.mean())
@@ -208,7 +203,7 @@ unsigned long long int Tuning::search_delay(float _perc)
     inputs.push(input());
   }
   time_ = micros() - time_;
-  ledcWrite(CHANNEL_PWM, 0);
+  output(0);
   delayMicroseconds(time_ * 1.5);
   return time_;
 }
@@ -257,7 +252,7 @@ unsigned long long int Tuning::search_settling(float _perc, unsigned long long i
     inputs.clear_();
     initial_time = micros();      //acquisition initial time
     initial_input = input();      //acquisition initial sample
-    ledcWrite(CHANNEL_PWM, _perc * (pow(2, RESOLUTION_PWM) - 1) / 100);  //output start up
+    output(_perc);
     inputs.push(initial_input);
     time_ = initial_time;
     max_ = initial_input;       //setting up max value equal to first sample (for rising system output)
@@ -289,7 +284,7 @@ unsigned long long int Tuning::search_settling(float _perc, unsigned long long i
       }
     }
     current_st = micros() - initial_time;
-    ledcWrite(CHANNEL_PWM, 0);  //reset the systems
+    output(0);  //reset the systems
 #ifdef DEBUG
     Serial.print("settling time[s]:\t");
     Serial.println(current_st / 1000000.0);
@@ -327,7 +322,7 @@ bool Tuning::areas_mtd(float _perc, unsigned long long int _sampling_time, float
   float S1 = 0, S2 = 0, current_input;
   unsigned long long int time_, initial_time;
   inputs.push(input());
-  ledcWrite(CHANNEL_PWM, _perc * (pow(2, RESOLUTION_PWM) - 1) / 100);
+  output(_perc);
   time_ = micros();
   initial_time = time_;
   current_input = inputs.mean();
@@ -378,8 +373,8 @@ float Tuning::noise(float _perc)
 
 bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, float* _l)
 {
-  float rise_time = _perc / _max_deriv, act_perc = 0, max_input, min_input, noise, steady_input, input_av, hys, d_perc;
-  Queue ult_times(10), inputs(SIZE_I), amplitude(10);
+  float rise_time = _perc / _max_deriv, act_perc = 0, max_input, min_input, noise, steady_input, input_av, hys, d_perc, range=0.01;
+  Queue ult_times(10), inputs(SIZE_I), amplitude(10), means(SIZE_I), slopes(SIZE_I);
   unsigned long long int time_, d_time, ult_t;
   unsigned long int count = 0;
   bool is_high, is_steady_state = false;
@@ -395,19 +390,22 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
 
   //bringing the system at the steady state
   time_ = micros();
-  ledcWrite(CHANNEL_PWM, act_perc );
+  output(act_perc);
   act_perc += 0.1;
   while (act_perc <= _perc)
   {
     if (micros() - time_ >= d_time)
     {
       time_ = micros();
-      ledcWrite(CHANNEL_PWM, act_perc * (pow(2, RESOLUTION_PWM) - 1) / 100);
+      output(act_perc);
       act_perc += 0.1;
+      inputs.push(input());
+      means.push(inputs.mean());
     }
   }
 
   //waiting for the steady state
+  inputs.clear_();
   time_ = micros();
   inputs.push(input());
   max_input < inputs.max_();
@@ -416,12 +414,15 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
   d_time = (micros() - time_) * 1.3;
   max_input = input();
   time_ = micros();
-  while (count <= SIZE_I * 4)
+  while (slopes.std() <= 2 || count < SIZE_I * 4)
   {
     if (micros() - time_ >= d_time)
     {
       time_ = micros();
       inputs.push(input());
+      means.push(inputs.mean());
+      slopes.push(means.slope());
+
       if (max_input < inputs.max_())
       {
         max_input = inputs.max_();
@@ -434,15 +435,11 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
   }
 
 #ifdef DEBUG
+  Serial.println(inputs.std() * 3);
+  Serial.println(inputs.mean() / _perc);
   Serial.println("System at the steady state");
 #endif
 
-  //detection noise which will be the hysteresis
-  for (int i = 0; i < SIZE_I; i++)
-  {
-    inputs.push(input());
-    delayMicroseconds(SIZE_I);
-  }
   noise = inputs.std() * 3;
   hys = noise * 5;
   steady_input = inputs.mean();
@@ -464,7 +461,7 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
   //start relay method
   inputs.clear_(steady_input);
   time_ = micros();
-  ledcWrite(CHANNEL_PWM, (_perc + d_perc) * (pow(2, RESOLUTION_PWM) - 1) / 100);
+  output(_perc + d_perc);
   is_high = true;
   while (inputs.mean() < steady_input + noise) {
     inputs.push(input());
@@ -489,7 +486,7 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
     {
       if (input_av > steady_input + hys)
       {
-        ledcWrite(CHANNEL_PWM, (_perc - d_perc) * (pow(2, RESOLUTION_PWM) - 1) / 100);
+        output(_perc - d_perc);
         is_high = false;
       }
       if (max_input < input_av)
@@ -499,7 +496,7 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
       if (input_av < steady_input - hys)
       {
         ult_t = micros() - time_;
-        ledcWrite(CHANNEL_PWM, (_perc + d_perc) * (pow(2, RESOLUTION_PWM) - 1) / 100);
+        output(_perc + d_perc);
         time_ += ult_t;
         ult_times.push(ult_t);
         is_high = true;
@@ -512,9 +509,14 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
           Serial.print("ultimate period[us]:\t");
           Serial.println(ult_times.mean());
           #endif*/
-        if (ult_times.std() * 3 <= ult_times.mean() * 0.02 && count >= 10)
+        if (ult_times.std() * 3 <= ult_times.mean() * range && count >= 10)
         {
           is_steady_state = true;
+        }
+        if(count>=10 && count % 3)
+        {
+          range*=1.5;
+          Serial.println(range);
         }
         amplitude.push(max_input - min_input);
       }
