@@ -3,6 +3,7 @@
 import serial
 import Function as fn
 from sympy import *
+import control
 
 def write_read(x):
     micro.write(bytes(x, 'utf-8'))
@@ -22,21 +23,17 @@ s, z = symbols("s, z")
 port=fn.chose_COMPORT()
 micro = serial.Serial(port=port, baudrate=115200, timeout=.1)
 
-#system acquisition
-expr = fn.insert_sys("insert the system:")
-expr=cancel(expr)
-pprint(expr)
+#open control law
+ctrl_law=fn.open_data_user()
+ctrl_law=cancel(ctrl_law)
+pprint(ctrl_law)
 
 #Z transform
-print("Z P K:\t"+str(fn.zpk_data(expr,s)))
-zexpr=fn.c2d(expr,0.001)
+zexpr=control.c2d(ctrl_law,1,'tustin')
 pprint(zexpr)
-print("Z P K:\t"+str(fn.zpk_data(zexpr,z)))
 
 #preparing for microcontroller communication
 coeff_u,coeff_y=fn.coeff4micro(zexpr)
-pprint(coeff_u)
-pprint(coeff_y)
 msg=starter
 msg=msg+separator+str(3+len(coeff_y)+len(coeff_u))
 msg=msg+separator+str(len(coeff_u))
@@ -46,7 +43,6 @@ for el in coeff_u:
 for el in coeff_y:
     msg=msg+separator+str(el)
 msg=msg+ender
-print(msg)
 
 #communication
 micro.write(bytes(msg, 'utf-8'))
@@ -58,10 +54,8 @@ while(True):
     fs=fn.float_question("The maximum sampling frequency is "+str(fmax)+"\nAt what frequency do you want sampling?")
     if(fs<=fmax):
         break
-print(fs)
 Ts=1/fs
-zexpr=fn.c2d(expr,Ts)
-pprint(zexpr)
+zexpr=fn.c2d(ctrl_law,Ts)
 coeff_u,coeff_y=fn.coeff4micro(zexpr)
 msg=starter
 msg=msg+separator+str(3+len(coeff_y)+len(coeff_u))

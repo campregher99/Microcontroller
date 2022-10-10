@@ -5,8 +5,8 @@ import Function as fn
 from sympy import *
 import numpy as np
 
-methods=["areas method","data streaming"]
-messages=["AM","ST"]
+methods=["areas method","data streaming","relay method"]
+messages=["AM","ST","RM"]
 sampling_div=10000
 
 #declaration communication standrd
@@ -63,3 +63,29 @@ elif choice == 1:
     fn.plot_data(time,samples,"s","y")
     data=[time.tolist(),samples.tolist(),sampling_time,perc]
     fn.save_data_user(data)
+elif choice == 2:
+    data = fn.read_COM(micro)
+    if (not data.split("!")[0].split("?")[1] == "OK"):
+        print("there was something wrong. Retry")
+        exit()
+    max_deriv=fn.float_question("Set the max derivative of the conroller output to bring the system to steady state")
+    msg = starter + separator + str(max_deriv) + ender
+    micro.write(bytes(msg, 'utf-8'))
+    data = fn.read_COM(micro)
+    if (not data.split("!")[0].split("?")[1] == "OK"):
+        print("there was something wrong. Retry")
+        exit()
+    print("now you have to wait until the microcontroller testing the system.")
+    data = fn.read_COM(micro)
+    list = data.split("!")[0].split("?")[1].split(separator)[1:]
+    print("There was an error during the procedure. Check if it is all right, then repeat the test. "
+          "\nIt could be related to the signal noise")
+    if list[0] == "ER":
+        print("There was an error during the procedure. Check if it is all right, then repeat the test. "
+              "\nIt could be related to the signal noise")
+        exit()
+    msg = "K:\t" + list[0] + "\nL:\t" + list[1] + "\nT:\t" + list[2] + "\nnoise std (68%):\t" + list[3]
+    print(msg)
+    if fn.digital_question("Do you want to save these datas?"):
+        list = [float(el) for el in list]
+        fn.save_data_user(list)

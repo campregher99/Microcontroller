@@ -147,7 +147,7 @@ void Tuning::begin_(float (*_input)(), void (*_output)(float))
   } else if (msg[0] == "RM")    //relay method
   {
     //reading delta percentage and maximum derivative of the controller output
-    float d_perc, max_deriv, t_ult, k_ult, K, L, T, omega_ult;
+    float d_perc, max_deriv, t_ult, k_ult, K, L, T, omega_ult, std;
     Serial.println(OK_MSG);
 
 #ifdef DEBUG
@@ -165,7 +165,7 @@ void Tuning::begin_(float (*_input)(), void (*_output)(float))
     Serial.println(max_deriv, 9);
 #endif
 
-    relay_mtd(perc, max_deriv,  & K, & T, & L);
+    relay_mtd(perc, max_deriv,  & K, & T, & L, & std);
 
     String send_;
     send_ = STARTER;
@@ -176,6 +176,8 @@ void Tuning::begin_(float (*_input)(), void (*_output)(float))
     Serial.print(L, 9);
     Serial.print(SEPARATOR);
     Serial.print(T, 9);
+    Serial.print(SEPARATOR);
+    Serial.print(std, 9);
     Serial.println(ENDER);
 
 #ifdef DEBUG
@@ -371,9 +373,9 @@ float Tuning::noise(float _perc)
   return inputs.max_() / 3.0;
 }
 
-bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, float* _l)
+bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, float* _l, float* _std)
 {
-  float rise_time = _perc / _max_deriv, act_perc = 0, max_input, min_input, noise, steady_input, input_av, hys, d_perc, range=0.01;
+  float rise_time = _perc / _max_deriv, act_perc = 0, max_input, min_input, noise_, steady_input, input_av, hys, d_perc, range = 0.01;
   Queue ult_times(10), inputs(SIZE_I), amplitude(10), means(SIZE_I), slopes(SIZE_I);
   unsigned long long int time_, d_time, ult_t;
   unsigned long int count = 0;
@@ -440,8 +442,8 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
   Serial.println("System at the steady state");
 #endif
 
-  noise = inputs.std() * 3;
-  hys = noise * 5;
+  noise_ = inputs.std() * 3;
+  hys = noise_ * 5;
   steady_input = inputs.mean();
   *_k = steady_input / _perc;
 
@@ -449,7 +451,7 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
 
 #ifdef DEBUG
   Serial.print("noise (99%):\t");
-  Serial.println(noise, 9);
+  Serial.println(noise_, 9);
   Serial.print("steady state input:\t");
   Serial.println(steady_input);
   Serial.print("K:\t");
@@ -463,7 +465,7 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
   time_ = micros();
   output(_perc + d_perc);
   is_high = true;
-  while (inputs.mean() < steady_input + noise) {
+  while (inputs.mean() < steady_input + noise_) {
     inputs.push(input());
   }
   *_l = micros() - time_;
@@ -513,10 +515,9 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
         {
           is_steady_state = true;
         }
-        if(count>=10 && count % 3)
+        if (count >= 10 && count % 3)
         {
-          range*=1.5;
-          Serial.println(range);
+          range *= 1.5;
         }
         amplitude.push(max_input - min_input);
       }
@@ -526,5 +527,6 @@ bool Tuning::relay_mtd(float _perc, float _max_deriv, float* _k, float* _t, floa
   }
   *_t = (ult_times.mean() / 2 - *_l * 2) / log((steady_input + hys - (_perc - d_perc) * *_k) / (steady_input - hys - (_perc - d_perc) * *_k)) / 1000000.0;
   *_l = *_l / 1000000.0;
+  *_std = noise_ / 3;
   return true;
 }

@@ -16,9 +16,12 @@ from sympy import *
 from sympy.solvers import solve
 import serial.tools.list_ports
 import serial
+import control
 
 
-s,z=symbols("s,z")
+s=control.tf("s")
+z=control.tf("z")
+
 init_printing()
 
 
@@ -239,11 +242,11 @@ def sys_out(coeff_u,coeff_y,U,Y):
 
 
 def coeff4micro(expr):
-    num,den=fraction(expr)
-    coef_n=Poly(num,z).all_coeffs()
-    coef_d=Poly(den,z).all_coeffs()
-    coef_n=np.array([coeff/coef_d[0] for coeff in coef_n])
-    coef_d=np.array([-coeff/coef_d[0] for coeff in coef_d[1:]])
+    num,den=control.tfdata(expr)
+    num = num[0][0]
+    den = den[0][0]
+    coef_n=np.array([coeff/den[0] for coeff in num])
+    coef_d=np.array([-coeff/den[0] for coeff in den[1:]])
     return coef_n.tolist(),coef_d.tolist()
 
 
@@ -363,6 +366,38 @@ def PID(K=0,Kstar=0,T=0,Tstar=0,L=0,N=10,method="CHR-SP-0",type=1):
             kp = 0.95 / a
             Ti = 1.4 * L
             Td = L * 0.47
+            Cc = kp * (1 + 1 / Ti / s + Td * s / (Td / N * s + 1))
+            Cf = kp * (1 + 1 / Ti / s + Td * s / (Td / N * s + 1))
+    elif method == 'CHR-DR-0':
+        if type == 0:
+            kp = 0.3 / a
+            Cc = kp
+            Cf = kp
+        elif type == 1:
+            kp = 0.6 / a
+            Ti = 4 * L
+            Cc = kp * (1 + 1 / Ti / s)
+            Cf = kp * (1 + 1 / Ti / s)
+        elif type == 2:
+            kp = 0.95 / a
+            Ti = 2.4 * L
+            Td = L * 0.42
+            Cc = kp * (1 + 1 / Ti / s + Td * s / (Td / N * s + 1))
+            Cf = kp * (1 + 1 / Ti / s + Td * s / (Td / N * s + 1))
+    elif method == 'CHR-DR-20':
+        if type == 0:
+            kp = 0.7 / a
+            Cc = kp
+            Cf = kp
+        elif type == 1:
+            kp = 0.7 / a
+            Ti = 2.3 * L
+            Cc = kp * (1 + 1 / Ti / s)
+            Cf = kp * (1 + 1 / Ti / s)
+        elif type == 2:
+            kp = 1.2 / a
+            Ti = 2 * L
+            Td = L * 0.42
             Cc = kp * (1 + 1 / Ti / s + Td * s / (Td / N * s + 1))
             Cf = kp * (1 + 1 / Ti / s + Td * s / (Td / N * s + 1))
     elif method == 'Hal':
