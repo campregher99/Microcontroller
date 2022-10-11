@@ -49,7 +49,7 @@ $$L(s)=C(s)P(s)=\frac{2}{3Ls}e^{-sL}$$
 **Warning:** the adc of this board is non linear (from 0V to 0.1V is encoded with 0), it is not suitable for accurate tasks.
 
 ## User Guide
-1. *Include* the [library](https://github.com/campregher99/Microcontroller/tree/main/arduino/library) folder to the Arduino librries.
+1. *Add* the [library](https://github.com/campregher99/Microcontroller/tree/main/arduino/library) folder to the Arduino librries.
 2. *Define* the input/output/reference functions as shown in the Code  structure paragraph and insert them in [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) and [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino). You hve to insert definition under the `loop()` function, prototype ahead `main()` and pass the pointers at `tuning.begin_()` and `controller.begin_()` method call.
 2. *Upload* [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) on the Arduino boards.
 3. *Open* [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py) on your computer and make sure that the Arduino serial monitor or plotter are closed  (if the program stops after you select the board try to restart [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py)).
