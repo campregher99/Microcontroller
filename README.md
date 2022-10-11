@@ -14,10 +14,7 @@ This project can be divided in tree main parts
 
 ## Code structure
 * **System identification**
- + Arduino: the [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/ESP32/estimator/estimator.ino) program provide the hardware part of the identification procedure. You have to define the input, output and reference functins, which will have the same signture as below:
-	`void output(float out);`
-	`float input(void);`
-	`float reference(void);`
+ + Arduino: the [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/ESP32/estimator/estimator.ino) program provide the hardware part of the identification procedure. You have to define the input, output and reference functins, which will have the same signture:`void output(float out);`	`float input(void);`	`float reference(void);`
  + Python: provide the user interface and save the values estimated by the microcontroller by the [micro_tuning_PID.py](https://github.com/campregher99/Microcontroller/blob/main/python/micro_tuning_PID.py) script.
 
 * **Controller building**
