@@ -14,15 +14,15 @@ This project can be divided in tree main parts
 
 ## Code structure
 * **System identification**
- + Arduino: the [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/ESP32/estimator/estimator.ino) program provide the hardware part of the identification procedure. You have to define the input, output and reference functins, which will have the same signture:`void output(float out);`	`float input(void);`	`float reference(void);`
+ + Arduino: the [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) program provide the hardware part of the identification procedure. You have to define the input, output and reference functins, which will have the same signture:`void output(float out);`	`float input(void);`	`float reference(void);`
  + Python: provide the user interface and save the values estimated by the microcontroller by the [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py) script.
 
 * **Controller building**
- + Python: [Controler_design.py]() permits to choice the desired controll structure and perform the calculations in order to build the control law. Finally permit to save the generated law.
+ + Python: [Controler_design](https://github.com/campregher99/Microcontroller/blob/main/python/Controller_design.py) permits to choice the desired controll structure and perform the calculations in order to build the control law. Finally permit to save the generated law.
 
 * **Controller implementation**
- + Arduino: [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/ESP32/Controller/Controller.ino) implement the actual code which will control the process. You have to define the input and output functins, as defined before.
- + Python: [micro_setter.py](https://github.com/campregher99/Microcontroller/blob/main/python/micro_setter.py) uploads the deired control law on microcontroller.
+ + Arduino: [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino) implement the actual code which will control the process. You have to define the input and output functins, as defined before.
+ + Python: [micro_setter](https://github.com/campregher99/Microcontroller/blob/main/python/micro_setter.py) uploads the deired control law on microcontroller.
 
 All the Arduino programs allow to enable the DEBUG and MONITOR modalities placed in Config.h file located in every Arduino programs:
 * *DEBUG* is used for the develop fase, must be disabled when you use the python scripts.
@@ -49,17 +49,17 @@ $$L(s)=C(s)P(s)=\frac{2}{3Ls}e^{-sL}$$
 **Warning:** the adc of this board is non linear (from 0V to 0.1V is encoded with 0), it is not suitable for accurate tasks.
 
 ## User Guide
-1. *Define* the input/output/reference functions as shown in the Code  structure paragraph and insert them in [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/ESP32/estimator/estimator.ino) and [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/ESP32/Controller/Controller.ino). You hve to insert definition under the `loop()` function, prototype ahead `main()` and pass the pointers at `tuning.begin_()` and `controller.begin_()` method call.
-2. *Upload* [Tuning.ino](https://github.com/campregher99/Microcontroller/blob/main/arduino/tuning_PID/tuning_PID.ino) on the Arduino boards.
-3. *Open* [micro_tuning_PID.py](https://github.com/campregher99/Microcontroller/blob/main/python/micro_tuning_PID.py) on your computer and make sure that the Arduino serial monitor or plotter are closed  (if the program stops after you select the board try to restart [micro_tuning_PID.py](https://github.com/campregher99/Microcontroller/blob/main/python/micro_tuning_PID.py)).
+1. *Define* the input/output/reference functions as shown in the Code  structure paragraph and insert them in [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) and [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino). You hve to insert definition under the `loop()` function, prototype ahead `main()` and pass the pointers at `tuning.begin_()` and `controller.begin_()` method call.
+2. *Upload* [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) on the Arduino boards.
+3. *Open* [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py) on your computer and make sure that the Arduino serial monitor or plotter are closed  (if the program stops after you select the board try to restart [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py)).
 4. *Follow* the scripts instruction.
 5. *Save* the output data as a .txt file.
-6. *Open*  [Controler_design.py]().
+6. *Open*  [Controler_design](https://github.com/campregher99/Microcontroller/blob/main/python/Controller_design.py).
 7. *Follow* the scripts instruction.
 8. *Save* the output controller law as a .txt file.
-9. *Upload* [eraser.ino]() that erases the microcontroler eeprom.
-10. *Upload* [Controller.ino](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino).
-11. *Open* [micro_setter.py](https://github.com/campregher99/Microcontroller/blob/main/python/micro_setter.py).
+9. *Upload* [eraser](https://github.com/campregher99/Microcontroller/blob/main/arduino/eraser/eraser.ino) that erases the microcontroler eeprom.
+10. *Upload* [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino).
+11. *Open* [micro_setter](https://github.com/campregher99/Microcontroller/blob/main/python/micro_setter.py).
 12. *Follow* the scripts instruction.
 13. *Ready* to control the systems
 
