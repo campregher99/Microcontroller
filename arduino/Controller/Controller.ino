@@ -6,6 +6,7 @@ Controller pid;
 volatile bool is_interrupt = false;
 float input();
 void output(float _output);
+float reference();
 
 //declaration timer variable
 hw_timer_t * timer = NULL;
@@ -63,21 +64,18 @@ void loop() {
 
 float input()
 {
-  return (float)analogRead(4);
+  //Insert here the input code
+
 }
 
 void output(float _output)
 {
-  ledcWrite(CHANNEL_PWM, _output * (pow(2, RESOLUTION_PWM) - 1) / 100);
+  //Insert here the output code
+
 }
 
 float reference()
 {
-  static float ref = 0;
-  if (Serial.available())
-  {
-    ref = Serial.readStringUntil(ENDER).toFloat();
-    clear_in_buffer();
-  }
-  return ref;
+  //Insert here the reference code
+  
 }
