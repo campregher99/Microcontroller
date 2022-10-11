@@ -17,20 +17,26 @@ separator="/"
 
 #sympy library functions initialization 
 init_printing() # doctest: +SKIP
-s, z = symbols("s, z")
+s=control.tf("s")
+z=control.tf("z")
 
 #serial communication initialization
 port=fn.chose_COMPORT()
 micro = serial.Serial(port=port, baudrate=115200, timeout=.1)
+micro.write(bytes("msg", 'utf-8'))
+data=fn.read_COM(micro)
+if(not data.split("!")[0].split("?")[1] =="NE"):
+    print("The controller is already setted up. Erase it and retry!")
+    exit()
 
 #open control law
 ctrl_law=fn.open_data_user()
-ctrl_law=cancel(ctrl_law)
-pprint(ctrl_law)
+ctrl_law=ctrl_law
+print(ctrl_law)
 
 #Z transform
 zexpr=control.c2d(ctrl_law,1,'tustin')
-pprint(zexpr)
+print(zexpr)
 
 #preparing for microcontroller communication
 coeff_u,coeff_y=fn.coeff4micro(zexpr)
@@ -55,7 +61,7 @@ while(True):
     if(fs<=fmax):
         break
 Ts=1/fs
-zexpr=fn.c2d(ctrl_law,Ts)
+zexpr=control.c2d(ctrl_law,Ts,"tustin")
 coeff_u,coeff_y=fn.coeff4micro(zexpr)
 msg=starter
 msg=msg+separator+str(3+len(coeff_y)+len(coeff_u))
@@ -66,6 +72,8 @@ for el in coeff_u:
 for el in coeff_y:
     msg=msg+separator+str(el)
 msg=msg+ender
+micro.write(bytes(msg, 'utf-8'))
+msg = starter + separator + str(Ts)+ender
 micro.write(bytes(msg, 'utf-8'))
 data=fn.read_COM(micro)
 print(data)

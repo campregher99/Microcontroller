@@ -21,6 +21,7 @@ void IRAM_ATTR interrrupt_timer()
 
 void setup() {
   uint64_t T;
+
   // configure LED PWM functionalitites
   ledcSetup(CHANNEL_PWM, FREQ_PWM, RESOLUTION_PWM);
 
