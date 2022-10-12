@@ -5,48 +5,48 @@ this project aims to implement all the possible control structures (descrete tim
 
 ## Structure
 
-This project can be divided in tree main parts
+This project can be divided in tree main parts:
 
 1. **Identification** of the system which will be controlled or used for other similar purpose like observing the real process. Throw identification tecniques (i.e. Areas, Relay feedback, Least square ...).
-2. **Controller building** a series of cntrol structures (i.e. PID, Smith predictor ...) which you can choose and tune properly in order to reach the desred result.
-3. **Controller implementation** of the structure choosen in a desired microcontroller.
+2. **Controller building** a series of cntrol structures (i.e. PID, Smith predictor ...) which you can choose and tune properly in order to reach the desired results.
+3. **Controller implementation** on a micro controller.
 ![implementation](https://raw.githubusercontent.com/campregher99/Microcontroller/main/images/microcontroller.png)
 
 ## Code structure
 * **System identification**
- + Arduino: the [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) program provide the hardware part of the identification procedure. You have to define the input, output and reference functins, which will have the same signture:`void output(float out);`	`float input(void);`	`float reference(void);`
- + Python: provide the user interface and save the values estimated by the microcontroller by the [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py) script.
+ + Arduino: the [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) program provides the hardware part of the identification procedure. You have to define the input, output and reference functins, which will have the following signture:`void output(float out);`	`float input(void);`	`float reference(void);`
+ + Python: [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py) script provides the user interface and save the values estimated by the micro controller.
 
 * **Controller building**
  + Python: [Controler_design](https://github.com/campregher99/Microcontroller/blob/main/python/Controller_design.py) permits to choice the desired controll structure and perform the calculations in order to build the control law. Finally permit to save the generated law.
 
 * **Controller implementation**
- + Arduino: [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino) implement the actual code which will control the process. You have to define the input and output functins, as defined before.
- + Python: [micro_setter](https://github.com/campregher99/Microcontroller/blob/main/python/micro_setter.py) uploads the deired control law on microcontroller.
+ + Arduino: [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino) implements the actual code which will control the process. You have to define the input and output functins, as before.
+ + Python: [micro_setter](https://github.com/campregher99/Microcontroller/blob/main/python/micro_setter.py) uploads the desired control law on micro controller.
 
-All the Arduino programs allow to enable the DEBUG and MONITOR modalities placed in Config.h file located in every Arduino programs:
-* *DEBUG* is used for the develop fase, must be disabled when you use the python scripts.
-* *MONITOR* is used to stream the datas in order to visualize them on the Serial Plotter of Arduino IDE, must be disabled when you use the python scripts.
+All the Arduino programs allow to enable the DEBUG and MONITOR modalities placed in [SetUp](https://github.com/campregher99/Microcontroller/blob/main/arduino/library/System.h) file:
+* *DEBUG* is used for the develop phase, must be disabled when you use the python scripts.
+* *MONITOR* is used to stream the data in order to visualize them on the Serial Plotter of Arduino IDE, must be disabled when you use the python scripts.
 
 ## Current implementation
 **Identification methods:**
 
 * *Areas method* used for FOPDT systems returns time constant, delay and dc gain of the process and standard deviation of initial condition and at steady state. It is implemented only for positive system output. The system is assumed in a stable initial condition. Can be detected process that have a time constant less than thirty seconds otherwise the procedure maight fail.
-* *Relay feedback method* used for FOPDT systems returns time constant, delay and dc gain of the process and standard deviation of steady state. It is implemented only for positive system output.
+* *Relay feedback method* used for FOPDT systems returns time constant, delay and dc gain of the process and standard deviation at steady state. It is implemented only for positive system output.
 
 **Controller structures:**
 
 * **PID**
- + *Ziegler and Nichols* is a method used only for load disturbance rejection task. It aims to make the system dacay ratio to 0.25, which implies a damping factor of 0.22.
+ + *Ziegler and Nichols* is a method used only for load disturbance rejection task. It aims to make the system dacay ratio to 0.25, which implies a damping factor of 0.22 and a consequent overshoot of 50%.
  + *Chien-Hrones-Reswick* it is an improovement of the Ziegler and Nichols method that implement different law for load disturbance rejection task and set point following task, morover permit to choose the desired overshoot percentage (this version only 0% or 20%).
  + *Haalman* is an analytical method that set the desired open-loop function as:
 $$L(s)=C(s)P(s)=\frac{2}{3Ls}e^{-sL}$$
-* **Cancellation controller** basic structure only for system which has low disturbs, since it is based on pole-zero cancelation.
-* **Anti-windup** implemented from 0% to 100%
+* **Cancellation controller** basic structure only for system which has low disturbs, since it is based on pole-zero cancelation, it permits to choose the settling time according to the actuator saturation.
+* **Anti-windup** implemented from 0% to 100%, always activated.
 
 **Microcontroller tested:**
 * **ESP-WROOM-32** [Az-delivery version](https://www.az-delivery.de/it/products/esp32-developmentboard)
-**Warning:** the adc of this board is non linear (from 0V to 0.1V is encoded with 0), it is not suitable for accurate tasks.
+**Warning:** the adc of this board is non linear (from 0V to 0.1V is always encoded with 0), it is not suitable for accurate tasks.
 
 ## User Guide
 1. *Add* the [library](https://github.com/campregher99/Microcontroller/tree/main/arduino/library) folder to the Arduino librries.
@@ -54,11 +54,11 @@ $$L(s)=C(s)P(s)=\frac{2}{3Ls}e^{-sL}$$
 2. *Upload* [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) on the Arduino boards.
 3. *Open* [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py) on your computer and make sure that the Arduino serial monitor or plotter are closed  (if the program stops after you select the board try to restart [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py)).
 4. *Follow* the scripts instruction.
-5. *Save* the output data as a .txt file.
+5. *Save* the output data.
 6. *Open*  [Controler_design](https://github.com/campregher99/Microcontroller/blob/main/python/Controller_design.py).
 7. *Follow* the scripts instruction.
-8. *Save* the output controller law as a .txt file.
-9. *Upload* [eraser](https://github.com/campregher99/Microcontroller/blob/main/arduino/eraser/eraser.ino) that erases the microcontroler eeprom.
+8. *Save* the output controller law.
+9. *Upload* [eraser](https://github.com/campregher99/Microcontroller/blob/main/arduino/eraser/eraser.ino) that erases the micro controler eeprom.
 10. *Upload* [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino).
 11. *Open* [micro_setter](https://github.com/campregher99/Microcontroller/blob/main/python/micro_setter.py).
 12. *Follow* the scripts instruction.
