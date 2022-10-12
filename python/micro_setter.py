@@ -4,6 +4,7 @@ import serial
 import Function as fn
 from sympy import *
 import control
+import time
 
 def write_read(x):
     micro.write(bytes(x, 'utf-8'))
@@ -23,6 +24,7 @@ z=control.tf("z")
 #serial communication initialization
 port=fn.chose_COMPORT()
 micro = serial.Serial(port=port, baudrate=115200, timeout=.1)
+time.sleep(0.1)
 micro.write(bytes("msg", 'utf-8'))
 data=fn.read_COM(micro)
 if(not data.split("!")[0].split("?")[1] =="NE"):
@@ -52,6 +54,7 @@ msg=msg+ender
 
 #communication
 micro.write(bytes(msg, 'utf-8'))
+time.sleep(0.1)
 data=fn.read_COM(micro)
 Ts_max=int(data.split("!")[0].split("?")[1])
 fmax=floor(1000000/Ts_max*0.9)
@@ -73,7 +76,8 @@ for el in coeff_y:
     msg=msg+separator+str(el)
 msg=msg+ender
 micro.write(bytes(msg, 'utf-8'))
-msg = starter + separator + str(Ts)+ender
+time.sleep(0.1)
+msg = starter + separator + str(Ts*1000000) + ender
 micro.write(bytes(msg, 'utf-8'))
 data=fn.read_COM(micro)
 print(data)

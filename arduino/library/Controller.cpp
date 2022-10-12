@@ -115,14 +115,14 @@ void Controller::refresh()
   #ifdef MONITOR
   if(is_setup)
   {
-    delayMicroseconds();
+    delayMicroseconds(450);
   }else
   {
     Serial.print(ref,3);
     Serial.print(",");
     Serial.print(in,3);
     Serial.print(",");
-    Serial.println(out,3);    
+    Serial.println(out,3);
   }
   #endif
 }
@@ -139,7 +139,7 @@ void Controller::setEEPROM()
     Serial.println(strs[0]);
     Serial.println(len);
 #endif
-  } while (len < 5);	//check if the message length isn't correct otherwise moves on
+  } while (len < strs[0].toInt());	//check if the message length isn't correct otherwise moves on
   input_size = strs[1].toInt();
   output_size = strs[2].toInt();
   float input_coeff[input_size];

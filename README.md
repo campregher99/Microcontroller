@@ -111,9 +111,9 @@ float reference()
 }
 ```
 ### Video explanetion
-* [Estimation]()
-* [Control designing]()
-* [Control implementatio]()
+* [Estimation](https://www.youtube.com/watch?v=6kdfCB7v6HE&t=8s)
+* [Control designing](https://www.youtube.com/watch?v=_sXwOQpxr8A)
+* [Control implementatio](https://www.youtube.com/watch?v=COWamDWwHf8)
 
 
 
