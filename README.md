@@ -24,7 +24,7 @@ This project can be divided in tree main parts:
  + Arduino: [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino) implements the actual code which will control the process. You have to define the input and output functins, as before.
  + Python: [micro_setter](https://github.com/campregher99/Microcontroller/blob/main/python/micro_setter.py) uploads the desired control law on micro controller.
 
-All the Arduino programs allow to enable the DEBUG and MONITOR modalities placed in [SetUp](https://github.com/campregher99/Microcontroller/blob/main/arduino/library/System.h) file:
+All the Arduino programs allow to enable the DEBUG and MONITOR modalities placed in [SetUp](https://github.com/campregher99/Microcontroller/blob/main/arduino/library/SetUp.h) file:
 * *DEBUG* is used for the develop phase, must be disabled when you use the python scripts.
 * *MONITOR* is used to stream the data in order to visualize them on the Serial Plotter of Arduino IDE, must be disabled when you use the python scripts.
 
