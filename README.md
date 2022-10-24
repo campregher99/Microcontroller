@@ -14,7 +14,9 @@ This project can be divided in tree main parts:
 
 ## Code structure
 * **System identification**
- + Arduino: the [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) program provides the hardware part of the identification procedure. You have to define the input, output and reference functins, which will have the following signture:`void output(float out);`	`float input(void);`	`float reference(void);`
+ + Arduino: the [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) program provides the hardware part of the identification procedure. You have to define the input, output and reference functins, which will have the following signture:
+
+	`void output(float out);`	`float input(void);`	`float reference(void);`
  + Python: [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py) script provides the user interface and save the values estimated by the micro controller.
 
 * **Controller building**
@@ -50,7 +52,7 @@ $$L(s)=C(s)P(s)=\frac{2}{3Ls}e^{-sL}$$
 
 ## User Guide
 1. *Add* the [library](https://github.com/campregher99/Microcontroller/tree/main/arduino/library) folder to the Arduino librries.
-2. *Define* the input/output/reference functions as shown in the Code  structure paragraph and insert them in [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) and [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino). You hve to insert definition under the `loop()` function, prototype ahead `main()` and pass the pointers at `tuning.begin_()` and `controller.begin_()` method call.
+2. *Define* the input/output/reference functions as shown in the Code  structure paragraph and insert them in [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) and [Controller](https://github.com/campregher99/Microcontroller/blob/main/arduino/Controller/Controller.ino). You have to insert definition under the `loop()` function, prototype ahead `main()` and pass the pointers at `tuning.begin_()` and `controller.begin_()` method call.
 2. *Upload* [Estimator](https://github.com/campregher99/Microcontroller/blob/main/arduino/estimator/estimator.ino) on the Arduino boards.
 3. *Open* [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py) on your computer and make sure that the Arduino serial monitor or plotter are closed  (if the program stops after you select the board try to restart [Estimator](https://github.com/campregher99/Microcontroller/blob/main/python/Estimator.py)).
 4. *Follow* the scripts instruction.
