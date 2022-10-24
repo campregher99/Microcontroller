@@ -39,9 +39,9 @@ All the Arduino programs allow to enable the DEBUG and MONITOR modalities placed
 **Controller structures:**
 
 * **PID**
- + *Ziegler and Nichols* is a method used only for load disturbance rejection task. It aims to make the system dacay ratio to 0.25, which implies a damping factor of 0.22 and a consequent overshoot of 50%.
- + *Chien-Hrones-Reswick* it is an improovement of the Ziegler and Nichols method that implement different law for load disturbance rejection task and set point following task, morover permit to choose the desired overshoot percentage (this version only 0% or 20%).
- + *Haalman* is an analytical method that set the desired open-loop function as:
+	* *Ziegler and Nichols* is a method used only for load disturbance rejection task. It aims to make the system dacay ratio to 0.25, which implies a damping factor of 0.22 and a consequent overshoot of 50%.
+	* *Chien-Hrones-Reswick* it is an improovement of the Ziegler and Nichols method that implement different law for load disturbance rejection task and set point following task, morover permit to choose the desired overshoot percentage (this version only 0% or 20%).
+	* *Haalman* is an analytical method that set the desired open-loop function as:
 $$L(s)=C(s)P(s)=\frac{2}{3Ls}e^{-sL}$$
 * **Cancellation controller** basic structure only for system which has low disturbs, since it is based on pole-zero cancelation, it permits to choose the settling time according to the actuator saturation.
 * **Anti-windup** implemented from 0% to 100%, always activated.
